@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>💩 Poop Log</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#faf5ef; --card:#fffcf8; --border:#e5d5be; --text:#261508; --muted:#7d5c3e;
+  --accent:#b85525; --accent2:#e07a3a; --success:#3d7a35; --warning:#b08a20;
+  --danger:#a82020; --pill:#f5ece0; --sh:0 1px 8px rgba(80,40,10,0.07);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--text);font-size:14px;line-height:1.5;}
+header{background:var(--accent);color:#fff;padding:.9rem 1.5rem;display:flex;align-items:center;justify-content:space-between;}
+header h1{font-size:1.15rem;font-weight:700;}
+header p{font-size:.75rem;opacity:.8;margin-top:1px;}
+.wrap{max-width:920px;margin:0 auto;padding:1.2rem 1.2rem;}
+
+/* compact form */
+.log-toggle{display:flex;align-items:center;justify-content:space-between;background:var(--card);border:1.5px solid var(--border);border-radius:10px;padding:.6rem .9rem;margin-bottom:.85rem;cursor:pointer;box-shadow:var(--sh);}
+.log-toggle span{font-size:.85rem;font-weight:600;color:var(--accent);}
+.tog-arr{font-size:.65rem;color:var(--muted);transition:transform .2s;}
+.log-toggle.open .tog-arr{transform:rotate(180deg);}
+.log-form{background:var(--card);border:1.5px solid var(--border);border-top:none;border-left:3px solid var(--accent2);border-radius:0 0 10px 10px;padding:.9rem .9rem .75rem;margin-top:-6px;margin-bottom:1.1rem;display:none;box-shadow:var(--sh);}
+.log-form.open{display:block;}
+.fr{display:flex;flex-wrap:wrap;gap:.55rem;align-items:flex-end;}
+.fg{display:flex;flex-direction:column;gap:3px;flex:1;min-width:90px;}
+.fg.w2{flex:2;min-width:150px;}
+.fg label{font-size:.63rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;}
+.fg select,.fg input[type=date],.fg input[type=time]{padding:.35rem .5rem;border:1.5px solid var(--border);border-radius:6px;background:#fff;font-family:'Plus Jakarta Sans',sans-serif;font-size:.8rem;color:var(--text);}
+.fg select:focus,.fg input:focus{outline:2px solid var(--accent2);border-color:var(--accent2);}
+.crow{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:.55rem;}
+.crow label{font-size:.63rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-right:2px;}
+.cbtn{width:22px;height:22px;border-radius:50%;border:2.5px solid transparent;cursor:pointer;transition:transform .12s;flex-shrink:0;}
+.cbtn:hover{transform:scale(1.22);}
+.cbtn.active{border-color:var(--text);transform:scale(1.22);}
+.fr2{display:flex;gap:.55rem;margin-top:.55rem;align-items:flex-end;flex-wrap:wrap;}
+.fn{flex:1;min-width:160px;}
+.fn label{font-size:.63rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:3px;}
+.fn textarea{width:100%;padding:.35rem .5rem;border:1.5px solid var(--border);border-radius:6px;font-family:'Plus Jakarta Sans',sans-serif;font-size:.8rem;color:var(--text);background:#fff;resize:none;height:46px;}
+.fn textarea:focus{outline:2px solid var(--accent2);border-color:var(--accent2);}
+.fbtns{display:flex;gap:.4rem;align-items:flex-end;padding-bottom:1px;}
+.bp{background:var(--accent);color:#fff;border:none;padding:.38rem .9rem;border-radius:6px;font-family:'Plus Jakarta Sans',sans-serif;font-size:.8rem;font-weight:700;cursor:pointer;white-space:nowrap;}
+.bp:hover{background:#9a4420;}
+.bs{background:transparent;color:var(--muted);border:1.5px solid var(--border);padding:.38rem .65rem;border-radius:6px;font-family:'Plus Jakarta Sans',sans-serif;font-size:.8rem;cursor:pointer;}
+.bs:hover{border-color:var(--accent);color:var(--accent);}
+
+/* stats */
+.srow{display:flex;gap:.7rem;margin-bottom:1rem;}
+.sc{background:var(--card);border:1.5px solid var(--border);border-radius:9px;padding:.55rem .75rem;text-align:center;flex:1;box-shadow:var(--sh);}
+.sn{font-size:1.4rem;font-weight:700;color:var(--accent);font-family:'IBM Plex Mono',monospace;line-height:1.2;}
+.sl{font-size:.6rem;color:var(--muted);margin-top:2px;text-transform:uppercase;letter-spacing:.4px;}
+
+/* 80/20 split */
+.split{display:grid;grid-template-columns:1fr 260px;gap:.9rem;margin-bottom:1rem;}
+@media(max-width:660px){.split{grid-template-columns:1fr;}}
+
+/* calendar */
+.cc{background:var(--card);border:1.5px solid var(--border);border-radius:11px;padding:.9rem;box-shadow:var(--sh);}
+.st{font-size:.8rem;font-weight:700;color:var(--text);margin-bottom:.65rem;display:flex;align-items:center;gap:5px;}
+.ch{display:flex;align-items:center;justify-content:space-between;margin-bottom:.55rem;}
+.cn{background:none;border:1.5px solid var(--border);border-radius:5px;padding:2px 8px;cursor:pointer;font-size:.75rem;color:var(--muted);}
+.cn:hover{border-color:var(--accent);color:var(--accent);}
+.cm{font-size:.85rem;font-weight:700;}
+.cg{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;}
+.cdn{text-align:center;font-size:.58rem;font-weight:700;color:var(--muted);padding:3px 0;text-transform:uppercase;}
+.cd{aspect-ratio:1;display:flex;align-items:center;justify-content:center;border-radius:5px;font-size:.72rem;font-weight:500;position:relative;border:1.5px solid transparent;}
+.cd.today{border-color:var(--accent2);font-weight:700;}
+.cd.has-entry{background:#fde5cc;color:var(--accent);font-weight:700;}
+.cd.has-entry::after{content:'•';position:absolute;bottom:1px;font-size:7px;color:var(--accent);}
+
+/* entries */
+.ec{background:var(--card);border:1.5px solid var(--border);border-radius:11px;padding:.9rem;box-shadow:var(--sh);overflow-y:auto;max-height:400px;}
+.ei{display:flex;align-items:flex-start;gap:7px;padding:.5rem 0;border-bottom:1px solid var(--border);}
+.ei:last-child{border-bottom:none;}
+.edot{width:12px;height:12px;border-radius:50%;flex-shrink:0;margin-top:3px;border:1.5px solid rgba(0,0,0,.12);}
+.einfo{flex:1;min-width:0;}
+.edate{font-size:.65rem;color:var(--muted);font-family:'IBM Plex Mono',monospace;}
+.edet{font-size:.75rem;font-weight:600;margin-top:1px;display:flex;flex-wrap:wrap;gap:3px;}
+.enotes{font-size:.68rem;color:var(--muted);margin-top:2px;font-style:italic;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:200px;}
+.edel{background:none;border:none;color:var(--muted);cursor:pointer;font-size:.75rem;padding:2px 3px;border-radius:3px;flex-shrink:0;}
+.edel:hover{color:var(--danger);}
+.tag{display:inline-block;padding:1px 6px;border-radius:20px;font-size:.62rem;font-weight:600;}
+.emp{text-align:center;padding:1.5rem;color:var(--muted);font-size:.8rem;}
+.emp .big{font-size:2rem;margin-bottom:.35rem;}
+
+/* recs */
+.rc{background:var(--card);border:1.5px solid var(--border);border-radius:11px;padding:.9rem;margin-bottom:1rem;box-shadow:var(--sh);}
+.ri{display:flex;gap:9px;padding:.6rem 0;border-bottom:1px solid var(--border);}
+.ri:last-child{border-bottom:none;}
+.ricon{font-size:1rem;flex-shrink:0;margin-top:1px;}
+.rt strong{font-size:.8rem;font-weight:700;display:block;margin-bottom:2px;}
+.rt p{font-size:.74rem;color:var(--muted);line-height:1.55;}
+.tcm{margin-top:5px;padding:5px 9px;background:#f0f7ed;border-left:2.5px solid #4a8c3f;border-radius:0 5px 5px 0;font-size:.7rem;color:#2c5921;line-height:1.5;}
+.sd{width:7px;height:7px;border-radius:50%;display:inline-block;margin-right:4px;vertical-align:middle;}
+.sh{background:var(--danger);}.sm{background:var(--warning);}.sl2{background:var(--success);}
+
+/* guide box */
+.gc{background:var(--card);border:1.5px solid var(--border);border-radius:11px;padding:.9rem;margin-bottom:1rem;box-shadow:var(--sh);}
+.gtabs{display:flex;gap:4px;margin-bottom:.75rem;}
+.gt{padding:.28rem .7rem;border-radius:6px;border:1.5px solid var(--border);font-size:.72rem;font-weight:600;cursor:pointer;background:transparent;color:var(--muted);font-family:'Plus Jakarta Sans',sans-serif;}
+.gt.active{background:var(--accent);color:#fff;border-color:var(--accent);}
+.gp{display:none;}
+.gp.active{display:block;}
+.bm{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;}
+.bi{text-align:center;padding:.45rem .2rem;border:1.5px solid var(--border);border-radius:7px;}
+.be{font-size:1.1rem;}
+.bn{font-size:.58rem;font-weight:700;color:var(--accent);font-family:'IBM Plex Mono',monospace;margin-top:2px;}
+.bna{font-size:.52rem;color:var(--muted);margin-top:1px;line-height:1.2;}
+.bs2{font-size:.5rem;font-weight:700;margin-top:3px;padding:1px 4px;border-radius:8px;display:inline-block;}
+.sbad{background:#fde8e8;color:var(--danger);}
+.sok{background:#fdf3da;color:var(--warning);}
+.sgood{background:#e8f5e9;color:var(--success);}
+.colg{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;}
+.cgi{display:flex;align-items:center;gap:6px;padding:.4rem .55rem;border:1.5px solid var(--border);border-radius:6px;}
+.cgd{width:15px;height:15px;border-radius:50%;flex-shrink:0;border:1.5px solid rgba(0,0,0,.1);}
+.cgt strong{font-size:.68rem;display:block;font-weight:600;}
+.cgt span{font-size:.6rem;color:var(--muted);}
+
+.toast{position:fixed;bottom:1.1rem;right:1.1rem;background:var(--accent);color:#fff;padding:.55rem 1rem;border-radius:8px;font-size:.8rem;font-weight:600;opacity:0;transform:translateY(14px);transition:all .25s;pointer-events:none;z-index:100;}
+.toast.show{opacity:1;transform:translateY(0);}
+@media(max-width:500px){.srow{flex-wrap:wrap;}.sc{min-width:calc(50% - .35rem);}.bm{grid-template-columns:repeat(4,1fr);}.colg{grid-template-columns:repeat(2,1fr);}}
+</style>
+</head>
+<body>
+
+<header>
+  <div><h1>💩 Poop Log</h1><p>Gut health · GERD-aware · TCM notes</p></div>
+  <span style="font-size:1.7rem">🔬</span>
+</header>
+
+<div class="wrap">
+
+  <!-- COMPACT LOG TOGGLE -->
+  <div class="log-toggle" id="log-toggle" onclick="toggleForm()">
+    <span>+ Log a new entry</span>
+    <span class="tog-arr" id="tog-arr">▼</span>
+  </div>
+
+  <div class="log-form" id="log-form">
+    <div class="fr">
+      <div class="fg"><label>Date</label><input type="date" id="inp-date"></div>
+      <div class="fg"><label>Time</label><input type="time" id="inp-time"></div>
+      <div class="fg w2"><label>Bristol Type</label>
+        <select id="inp-bristol">
+          <option value="">Select...</option>
+          <option value="1">1 — Hard lumps</option>
+          <option value="2">2 — Lumpy sausage</option>
+          <option value="3">3 — Cracked sausage</option>
+          <option value="4">4 — Smooth sausage ✅</option>
+          <option value="5">5 — Soft blobs</option>
+          <option value="6">6 — Fluffy/mushy</option>
+          <option value="7">7 — Watery/liquid</option>
+        </select>
+      </div>
+      <div class="fg"><label>Size</label>
+        <select id="inp-size"><option value="">—</option><option>Small</option><option>Medium</option><option>Large</option><option>Massive</option></select>
+      </div>
+      <div class="fg"><label>Urgency</label>
+        <select id="inp-urgency"><option value="">—</option><option value="none">None</option><option value="mild">Mild</option><option value="urgent">Urgent</option><option value="emergency">Emergency</option></select>
+      </div>
+      <div class="fg"><label>Straining</label>
+        <select id="inp-strain"><option value="">—</option><option value="none">None</option><option value="slight">Slight</option><option value="moderate">Moderate</option><option value="severe">Severe</option></select>
+      </div>
+    </div>
+    <div class="crow">
+      <label>Color</label>
+      <button class="cbtn" style="background:#8B4513" data-color="brown" title="Brown"></button>
+      <button class="cbtn" style="background:#D2691E" data-color="tan" title="Tan"></button>
+      <button class="cbtn" style="background:#F4A460" data-color="yellow-brown" title="Yellow-Brown"></button>
+      <button class="cbtn" style="background:#228B22" data-color="green" title="Green"></button>
+      <button class="cbtn" style="background:#FFD700" data-color="yellow" title="Yellow"></button>
+      <button class="cbtn" style="background:#e8e8e8;border-color:#aaa" data-color="pale/white" title="Pale/White"></button>
+      <button class="cbtn" style="background:#222" data-color="black" title="Black"></button>
+      <button class="cbtn" style="background:#C0392B" data-color="red/blood" title="Red/Blood"></button>
+      <button class="cbtn" style="background:#808080" data-color="gray" title="Gray"></button>
+      <input type="hidden" id="inp-color">
+    </div>
+    <div class="fr2">
+      <div class="fn"><label>Notes</label><textarea id="inp-notes" placeholder="e.g. after coffee, bloated before..."></textarea></div>
+      <div class="fbtns">
+        <button class="bp" onclick="addEntry()">💩 Log it</button>
+        <button class="bs" onclick="clearForm()">Clear</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- STATS -->
+  <div class="srow">
+    <div class="sc"><div class="sn" id="stat-total">0</div><div class="sl">Total</div></div>
+    <div class="sc"><div class="sn" id="stat-thisweek">0</div><div class="sl">This week</div></div>
+    <div class="sc"><div class="sn" id="stat-streak">0</div><div class="sl">Streak 🔥</div></div>
+    <div class="sc"><div class="sn" id="stat-avg">—</div><div class="sl">Avg/day</div></div>
+  </div>
+
+  <!-- 80/20: CALENDAR + ENTRIES -->
+  <div class="split">
+    <div class="cc">
+      <div class="st">📅 Calendar</div>
+      <div class="ch">
+        <button class="cn" onclick="changeMonth(-1)">◀</button>
+        <span class="cm" id="cal-month-label">—</span>
+        <button class="cn" onclick="changeMonth(1)">▶</button>
+      </div>
+      <div class="cg" id="cal-grid"></div>
+    </div>
+    <div class="ec">
+      <div class="st">📋 Recent entries</div>
+      <div id="entries-list"><div class="emp"><div class="big">🌿</div>Nothing yet.</div></div>
+    </div>
+  </div>
+
+  <!-- RECOMMENDATIONS -->
+  <div class="rc">
+    <div class="st">💡 Recommendations <span style="font-size:.65rem;font-weight:500;color:var(--muted);margin-left:5px;">GERD-aware · TCM notes</span></div>
+    <div id="rec-list">
+      <div class="ri"><div class="ricon">📊</div>
+        <div class="rt"><strong>Start logging to get insights</strong>
+        <p>Log a few entries to receive personalized gut health recommendations.</p></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FUSED GUIDE -->
+  <div class="gc">
+    <div class="st">📖 Reference guides</div>
+    <div class="gtabs">
+      <button class="gt active" onclick="switchTab('bristol',this)">Bristol chart</button>
+      <button class="gt" onclick="switchTab('color',this)">Color guide</button>
+    </div>
+    <div class="gp active" id="tab-bristol">
+      <div class="bm">
+        <div class="bi"><div class="be">🪨</div><div class="bn">T1</div><div class="bna">Hard lumps</div><div class="bs2 sbad">Constip.</div></div>
+        <div class="bi"><div class="be">🌰</div><div class="bn">T2</div><div class="bna">Lumpy</div><div class="bs2 sbad">Constip.</div></div>
+        <div class="bi"><div class="be">🥖</div><div class="bn">T3</div><div class="bna">Cracked</div><div class="bs2 sok">Normal</div></div>
+        <div class="bi"><div class="be">🍌</div><div class="bn">T4</div><div class="bna">Smooth</div><div class="bs2 sgood">Ideal ✅</div></div>
+        <div class="bi"><div class="be">🫐</div><div class="bn">T5</div><div class="bna">Soft blobs</div><div class="bs2 sok">Border.</div></div>
+        <div class="bi"><div class="be">🌊</div><div class="bn">T6</div><div class="bna">Fluffy</div><div class="bs2 sbad">Loose</div></div>
+        <div class="bi"><div class="be">💧</div><div class="bn">T7</div><div class="bna">Liquid</div><div class="bs2 sbad">Diarrhea</div></div>
+      </div>
+    </div>
+    <div class="gp" id="tab-color">
+      <div class="colg">
+        <div class="cgi"><div class="cgd" style="background:#8B4513"></div><div class="cgt"><strong>Brown</strong><span>Normal ✅</span></div></div>
+        <div class="cgi"><div class="cgd" style="background:#D2691E"></div><div class="cgt"><strong>Tan</strong><span>Usually normal</span></div></div>
+        <div class="cgi"><div class="cgd" style="background:#F4A460"></div><div class="cgt"><strong>Yellow-Brown</strong><span>Diet-related</span></div></div>
+        <div class="cgi"><div class="cgd" style="background:#228B22"></div><div class="cgt"><strong>Green</strong><span>Fast transit</span></div></div>
+        <div class="cgi"><div class="cgd" style="background:#FFD700"></div><div class="cgt"><strong>Yellow</strong><span>Fat absorption</span></div></div>
+        <div class="cgi"><div class="cgd" style="background:#e8e8e8;border-color:#aaa"></div><div class="cgt"><strong>Pale/White</strong><span>⚠️ See doctor</span></div></div>
+        <div class="cgi"><div class="cgd" style="background:#222"></div><div class="cgt"><strong>Black</strong><span>⚠️ See doctor</span></div></div>
+        <div class="cgi"><div class="cgd" style="background:#C0392B"></div><div class="cgt"><strong>Red/Blood</strong><span>⚠️ See doctor</span></div></div>
+        <div class="cgi"><div class="cgd" style="background:#808080"></div><div class="cgt"><strong>Gray</strong><span>⚠️ See doctor</span></div></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+<div class="toast" id="toast">💩 Logged!</div>
+
+<script>
+const CM={brown:{hex:'#8B4513',label:'Brown',status:'normal',msg:'Normal, healthy color.'},tan:{hex:'#D2691E',label:'Tan',status:'normal',msg:'Usually normal; may indicate faster transit.'},'yellow-brown':{hex:'#F4A460',label:'Yellow-Brown',status:'watch',msg:'Often diet-related (turmeric, carrots).'},green:{hex:'#228B22',label:'Green',status:'watch',msg:'Fast transit or high leafy-green intake.'},yellow:{hex:'#FFD700',label:'Yellow',status:'warning',msg:'May indicate fat malabsorption.'},'pale/white':{hex:'#e8e8e8',label:'Pale/White',status:'urgent',msg:'Possible bile duct issue. Consult a doctor.'},black:{hex:'#222',label:'Black',status:'urgent',msg:'Could indicate upper GI bleeding. See a doctor.'},'red/blood':{hex:'#C0392B',label:'Red/Blood',status:'urgent',msg:'Blood in stool — consult a doctor promptly.'},gray:{hex:'#808080',label:'Gray',status:'urgent',msg:'May signal liver or pancreas issues. See a doctor.'}};
+const BD={'1':{label:'Hard Lumps',status:'constipated'},'2':{label:'Lumpy Sausage',status:'constipated'},'3':{label:'Cracked Sausage',status:'normal'},'4':{label:'Smooth Sausage',status:'ideal'},'5':{label:'Soft Blobs',status:'borderline'},'6':{label:'Fluffy/Mushy',status:'loose'},'7':{label:'Watery/Liquid',status:'diarrhea'}};
+let entries=JSON.parse(localStorage.getItem('pooplog_v2')||'[]');
+let cY,cM;const now=new Date();cY=now.getFullYear();cM=now.getMonth();
+
+function toggleForm(){const f=document.getElementById('log-form'),t=document.getElementById('log-toggle'),a=document.getElementById('tog-arr');f.classList.toggle('open');t.classList.toggle('open');}
+document.querySelectorAll('.cbtn').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.cbtn').forEach(x=>x.classList.remove('active'));b.classList.add('active');document.getElementById('inp-color').value=b.dataset.color;}));
+function setDef(){const n=new Date();document.getElementById('inp-date').value=n.toISOString().split('T')[0];document.getElementById('inp-time').value=n.toTimeString().slice(0,5);}
+setDef();
+
+function addEntry(){
+  const d=document.getElementById('inp-date').value,ti=document.getElementById('inp-time').value,br=document.getElementById('inp-bristol').value,si=document.getElementById('inp-size').value,co=document.getElementById('inp-color').value,ur=document.getElementById('inp-urgency').value,st=document.getElementById('inp-strain').value,no=document.getElementById('inp-notes').value.trim();
+  if(!d){alert('Please select a date.');return;}if(!br&&!co){alert('Select a Bristol type or color.');return;}
+  entries.unshift({id:Date.now(),date:d,time:ti,bristol:br,size:si,color:co,urgency:ur,strain:st,notes:no});
+  localStorage.setItem('pooplog_v2',JSON.stringify(entries));showToast('💩 Logged!');clearForm();renderAll();
+}
+function clearForm(){['inp-bristol','inp-size','inp-urgency','inp-strain'].forEach(id=>document.getElementById(id).value='');document.getElementById('inp-notes').value='';document.getElementById('inp-color').value='';document.querySelectorAll('.cbtn').forEach(b=>b.classList.remove('active'));setDef();}
+function deleteEntry(id){entries=entries.filter(e=>e.id!==id);localStorage.setItem('pooplog_v2',JSON.stringify(entries));renderAll();}
+function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2200);}
+function switchTab(n,b){document.querySelectorAll('.gp').forEach(p=>p.classList.remove('active'));document.querySelectorAll('.gt').forEach(x=>x.classList.remove('active'));document.getElementById('tab-'+n).classList.add('active');b.classList.add('active');}
+
+function renderAll(){renderStats();renderCalendar();renderEntries();renderRecs();}
+
+function renderStats(){
+  const T=entries.length,today=new Date(),wa=new Date(today);wa.setDate(today.getDate()-6);
+  const wk=entries.filter(e=>new Date(e.date)>=wa).length;
+  let streak=0;const ds=new Set(entries.map(e=>e.date)),d=new Date(today);
+  while(true){const s=d.toISOString().split('T')[0];if(ds.has(s)){streak++;d.setDate(d.getDate()-1);}else break;}
+  const d30=new Date(today);d30.setDate(today.getDate()-29);const l30=entries.filter(e=>new Date(e.date)>=d30);
+  const avg=l30.length>0?(l30.length/30).toFixed(1):'—';
+  document.getElementById('stat-total').textContent=T;document.getElementById('stat-thisweek').textContent=wk;document.getElementById('stat-streak').textContent=streak;document.getElementById('stat-avg').textContent=avg;
+}
+
+function renderCalendar(){
+  const lbl=new Date(cY,cM,1).toLocaleDateString('en-US',{month:'long',year:'numeric'});
+  document.getElementById('cal-month-label').textContent=lbl;
+  const grid=document.getElementById('cal-grid');grid.innerHTML='';
+  ['Su','Mo','Tu','We','Th','Fr','Sa'].forEach(d=>{const el=document.createElement('div');el.className='cdn';el.textContent=d;grid.appendChild(el);});
+  const fd=new Date(cY,cM,1).getDay(),dim=new Date(cY,cM+1,0).getDate(),ts=new Date().toISOString().split('T')[0],ed=new Set(entries.map(e=>e.date));
+  for(let i=0;i<fd;i++){const el=document.createElement('div');el.className='cd';grid.appendChild(el);}
+  for(let d=1;d<=dim;d++){const el=document.createElement('div');el.className='cd';el.textContent=d;const ds=`${cY}-${String(cM+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;if(ds===ts)el.classList.add('today');if(ed.has(ds))el.classList.add('has-entry');grid.appendChild(el);}
+}
+function changeMonth(dir){cM+=dir;if(cM<0){cM=11;cY--;}if(cM>11){cM=0;cY++;}renderCalendar();}
+
+function tBg(s){return{ideal:'#e8f5e9',normal:'#e8f5e9',borderline:'#fff3cd',constipated:'#fde8e8',loose:'#fde8e8',diarrhea:'#fde8e8'}[s]||'#f0f0f0';}
+function tCo(s){return{ideal:'#2e7d32',normal:'#2e7d32',borderline:'#856404',constipated:'#b71c1c',loose:'#b71c1c',diarrhea:'#b71c1c'}[s]||'#555';}
+
+function renderEntries(){
+  const list=document.getElementById('entries-list');
+  if(!entries.length){list.innerHTML='<div class="emp"><div class="big">🌿</div>Nothing yet.</div>';return;}
+  list.innerHTML=entries.slice(0,25).map(e=>{
+    const cm=CM[e.color]||null,bd=BD[e.bristol]||null;
+    const dot=cm?`<div class="edot" style="background:${cm.hex}"></div>`:'<div class="edot" style="background:#ccc"></div>';
+    const bt=bd?`<span class="tag" style="background:${tBg(bd.status)};color:${tCo(bd.status)}">T${e.bristol}</span>`:'';
+    const ct=cm?`<span class="tag" style="background:#f5ece0;color:#7a3e15">${cm.label}</span>`:'';
+    const ug=e.urgency&&e.urgency!=='none'?`<span class="tag" style="background:#fff8e1;color:#7a5c00">${e.urgency}</span>`:'';
+    const sz=e.size?`<span class="tag" style="background:#e8f0fe;color:#1a4fb5">${e.size}</span>`:'';
+    return`<div class="ei">${dot}<div class="einfo"><div class="edate">${e.date}${e.time?' · '+e.time:''}</div><div class="edet">${bt}${ct}${sz}${ug}</div>${e.notes?`<div class="enotes">"${e.notes}"</div>`:''}</div><button class="edel" onclick="deleteEntry(${e.id})">✕</button></div>`;
+  }).join('');
+}
+
+function renderRecs(){
+  const list=document.getElementById('rec-list');
+  if(!entries.length){list.innerHTML='<div class="ri"><div class="ricon">📊</div><div class="rt"><strong>Start logging to get insights</strong><p>Log a few entries to receive personalized gut health recommendations.</p></div></div>';return;}
+  const recs=[];
+  const d30=new Date();d30.setDate(d30.getDate()-29);
+  const l30=entries.filter(e=>new Date(e.date)>=d30);
+  const apd=l30.length/30;
+  const bc={};entries.forEach(e=>{if(e.bristol)bc[e.bristol]=(bc[e.bristol]||0)+1;});
+  const topB=Object.entries(bc).sort((a,b)=>b[1]-a[1])[0];
+  const cc={};entries.forEach(e=>{if(e.color)cc[e.color]=(cc[e.color]||0)+1;});
+  const topC=Object.entries(cc).sort((a,b)=>b[1]-a[1])[0];
+  const urgN=entries.filter(e=>e.urgency==='urgent'||e.urgency==='emergency').length;
+  const strN=entries.filter(e=>e.strain==='moderate'||e.strain==='severe').length;
+
+  if(apd<0.5){recs.push({icon:'⏱️',sev:'sm',title:'Low frequency detected',msg:'Less than once every 2 days. Prioritize soluble fiber: oats, cooked carrots, ripe banana, peeled apple — avoid raw cruciferous vegetables and carbonated drinks, which worsen GERD. A cup of warm water first thing in the morning stimulates motility without triggering reflux. Light 10-min walks after meals help transit without raising abdominal pressure.',tcm:'TCM view: Constipation often reflects Spleen Qi Deficiency or Liver Qi Stagnation. Rice congee with a few drops of sesame oil gently moistens the intestines. Acupressure on ST-36 (Zusanli, 4 fingers below the kneecap) for 2 min daily tonifies digestive Qi.'});}
+  else if(apd>3){recs.push({icon:'⚡',sev:'sm',title:'High frequency — monitor closely',msg:'More than 3x/day may signal gut irritation. Avoid GERD triggers that also loosen bowels: coffee, fatty foods, spicy food, carbonated drinks, alcohol. Eat smaller, more frequent meals; chew thoroughly; avoid eating within 3 hours of lying down.',tcm:'TCM view: Frequent stools with urgency indicate Spleen Qi Deficiency with Dampness. Warm foods like congee, steamed yam, and cooked pumpkin help dry Dampness and strengthen the Spleen. Avoid cold/raw foods and iced drinks.'});}
+  else{recs.push({icon:'✅',sev:'sl2',title:'Frequency looks healthy',msg:'1–3 bowel movements per day is normal. Keep meal times consistent — regular eating schedules directly support bowel rhythm. Avoid late-night eating to protect the gut lining and prevent acid reflux. Wait at least 3 hours after dinner before lying down.',tcm:'TCM view: Regular bowel rhythm reflects balanced Stomach and Large Intestine Qi. Aim to eat breakfast at 7–9 AM (peak Stomach meridian time) and keep dinner light and early.'});}
+
+  if(topB){const bt=topB[0];
+    if(bt==='1'||bt==='2'){recs.push({icon:'💧',sev:'sh',title:`Constipation pattern (Type ${bt})`,msg:'Hard stools worsen GERD: straining raises abdominal pressure and pushes acid upward. Prioritize warm fluids, add psyllium husk stirred into water, and consider low-dose magnesium citrate (GERD-safe). Cooked oats and ripe banana are excellent GERD-safe choices. Elevate your bed head 15–20 cm.',tcm:'TCM view: Suggests Large Intestine Fluid Deficiency or Kidney Yin Deficiency. Moistening foods: black sesame seeds, cooked spinach, stewed pear soup. Avoid dry, fried, and spicy foods which deplete Yin and aggravate both constipation and acid reflux.'});}
+    else if(bt==='4'){recs.push({icon:'🏆',sev:'sl2',title:'Ideal stool consistency (Type 4)',msg:'Well-formed smooth stools indicate good gut hydration and fiber balance. For ongoing GERD management: continue avoiding chocolate, citrus, tomatoes, mint, and large amounts of garlic and onion. Always eat upright and wait 3 hours after meals before lying down.',tcm:'TCM view: Type 4 stools reflect harmonized Stomach and Spleen Qi — what TCM calls "middle Jiao harmony." Eat mindfully, chew well, and stop at 80% fullness, a core Taoist/TCM eating principle.'});}
+    else if(bt==='5'||bt==='6'){recs.push({icon:'🥛',sev:'sm',title:`Stools leaning loose (Type ${bt})`,msg:'Loose stools increase gut motility and can trigger more reflux episodes. Reduce dairy, fried foods, and excess sugar. GERD-safe binding foods: white rice, ripe banana, plain oatmeal, unseasoned crackers. Important: avoid peppermint — it relaxes the lower esophageal sphincter and worsens GERD.',tcm:'TCM view: Indicates Spleen Qi Deficiency with Cold Dampness. Moxibustion on CV-12 (Zhongwan) and ST-36 warms the Middle Jiao and tonifies Spleen. Avoid raw salads, cold drinks, and excessive raw fruit.'});}
+    else if(bt==='7'){recs.push({icon:'🚨',sev:'sh',title:'Diarrhea detected (Type 7)',msg:'Rehydrate with ORS or plain electrolyte water (avoid citrus sports drinks). GERD-safe bland diet: plain white rice, cooked chicken, plain crackers. Avoid caffeine, dairy, and acidic juices. Elevate your upper body when resting. See a doctor if it persists beyond 2 days.',tcm:'TCM view: Watery diarrhea often reflects Cold-Damp invasion of the Spleen/Stomach. Small amounts of fresh ginger in warm soup (not strong tea) dispels cold from the Middle Jiao. Moxa on ST-25 and SP-6 can help restore Spleen function.'});}}
+
+  if(topC){const cm=CM[topC[0]];
+    if(cm&&cm.status==='urgent'){recs.push({icon:'🔴',sev:'sh',title:`${cm.label} stools — seek medical advice`,msg:cm.msg+' If you also have GERD, black or red stools could indicate GI bleeding worsened by acid erosion — this needs urgent medical evaluation. Do not self-medicate with PPIs without a proper diagnosis.',tcm:'TCM view: Blood-tinged or black stools may reflect Heat in the Blood or Stomach Fire. Always get biomedical diagnosis first. TCM adjunct care focuses on cooling Stomach Fire — only under a licensed practitioner.'});}
+    else if(cm&&cm.status==='warning'){recs.push({icon:'⚠️',sev:'sm',title:`${cm.label} stools — dietary review`,msg:cm.msg+' Yellow stools may suggest fat malabsorption that can co-occur with GERD. Reduce dietary fat and avoid fatty GERD triggers. See a doctor if it persists.',tcm:'TCM view: Oily yellow stools suggest Damp-Heat in the Liver/Gallbladder. Bitter cooling foods may help clear Damp-Heat, but test cautiously as some can aggravate reflux.'});}
+    else if(cm&&cm.status==='watch'){recs.push({icon:'🌿',sev:'sl2',title:`${cm.label} stools — likely diet-related`,msg:cm.msg+' Green stools often mean stress-driven fast transit, which also worsens GERD. Practice slow mindful eating and diaphragmatic breathing before meals to activate the rest-and-digest response.',tcm:'TCM view: Green stools with fast transit often reflect Liver Qi Overacting on the Spleen — common in stressed individuals. Liver-soothing practices: Qi Gong, gentle stretching, and avoiding emotional eating.'});}}
+
+  if(strN>2){recs.push({icon:'😣',sev:'sm',title:'Straining observed — raises GERD risk',msg:'Straining increases intra-abdominal pressure — a key GERD trigger that pushes acid upward. Use a squatting footstool to open the anorectal angle. Never strain for more than 3 minutes. Increase warm fluids and soluble fiber. Avoid eating within 3 hours of bedtime.',tcm:'TCM view: Straining reflects Large Intestine Qi Deficiency. Acupressure on LI-4 (Hegu, the webbing between thumb and index finger) moves stagnant Qi in the Large Intestine — massage gently for 2 minutes.'});}
+  if(urgN>2){recs.push({icon:'🏃',sev:'sm',title:'Frequent urgency noted',msg:'Urgency combined with GERD may indicate IBS overlap. Avoid double triggers: coffee, alcohol, high-fat foods, peppermint. A low-FODMAP trial can help — most GERD-safe foods overlap with low-FODMAP. Consider a gastroenterology evaluation.',tcm:'TCM view: Urgency with cramping suggests Liver Invading Spleen — stress-related gut dysregulation. Qi Gong, Tai Chi, and reduced screen time around meals soothe Liver Qi. Cooked beets and dark leafy greens support Liver function.'});}
+
+  recs.push({icon:'🔥',sev:'sm',title:'GERD-friendly daily habits',msg:'Eat 4–5 smaller meals instead of 3 large ones. Never lie down within 3 hours of eating. Elevate bed head 15–20 cm. Limit chocolate, mint, tomato, citrus, onion, garlic, coffee, alcohol, and carbonated drinks. GERD-safe gut-friendly foods: cooked oatmeal, ripe banana, melon (non-citrus), lean poultry, small amounts of ginger cooked in food.',tcm:'TCM view: GERD is Stomach Qi Rebellion — Qi rising instead of descending. Eat breakfast at 7–9 AM (Stomach meridian peak) and keep dinner light. Acupressure on PC-6 (Neiguan, inner wrist 3 fingers up from wrist crease) calms Rebellious Stomach Qi and reduces nausea/reflux.'});
+  recs.push({icon:'💧',sev:'sl2',title:'Hydration — warm is better for GERD',msg:'Aim for 1.5–2L daily of warm or room-temperature water. Cold water can trigger esophageal spasms in GERD patients. Drink between meals, not during (diluting stomach acid disrupts digestion). Avoid sparkling water — CO₂ increases belching and acid reflux.',tcm:'TCM view: Warm fluids protect Stomach Yang. Start each morning with a cup of warm water or very mild ginger water (1–2 thin slices steeped briefly) to gently awaken the digestive system.'});
+  recs.push({icon:'🦠',sev:'sl2',title:'Gut microbiome — GERD-safe ferments',msg:'Plain unsweetened yogurt and kefir are generally safe with GERD and may reduce H. pylori risk. Avoid kombucha (acidic), tomato-based kimchi, and vinegar-heavy ferments. Prebiotic fiber from cooked oats, ripe banana, and well-cooked garlic (small amounts) supports gut flora and is GERD-tolerated.',tcm:'TCM view: A healthy microbiome aligns with TCM\'s strong Middle Jiao concept. Warm miso soup (not hot) supports gut flora without high acidity. Astragalus (Huang Qi) tea traditionally strengthens Spleen Qi and digestive immunity.'});
+
+  list.innerHTML=recs.map(r=>`<div class="ri"><div class="ricon">${r.icon}</div><div class="rt"><strong><span class="sd ${r.sev}"></span>${r.title}</strong><p>${r.msg}</p>${r.tcm?`<div class="tcm">🌿 ${r.tcm}</div>`:''}</div></div>`).join('');
+}
+
+renderAll();
+</script>
+</body>
+</html>
